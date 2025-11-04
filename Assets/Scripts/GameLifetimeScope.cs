@@ -27,42 +27,24 @@ public class GameLifetimeScope : LifetimeScope
     
     protected override void Configure(IContainerBuilder builder)
     {
-        // Domain
         builder.RegisterInstance(_gridProvider.GetGrid());
 
         builder.RegisterInstance(_mapManager).AsImplementedInterfaces();
         
-        // Building types repo: create Domain.BuildingType instances from config here
-        // var types = new List<Domain.Models.BuildingType>
-        // {
-        //     new Domain.Models.BuildingType("house","House", 100, 1, new[]{50,100}),
-        //     new Domain.Models.BuildingType("farm","Farm", 150, 2, new[]{75,150}),
-        //     new Domain.Models.BuildingType("mine","Mine", 200, 3, new[]{100,200})
-        // };
-        //
-        // builder.RegisterInstance(new InMemoryBuildingTypeRepository(types)).AsImplementedInterfaces();
-        
         builder.RegisterInstance(new PlayerEconomy(_initialGold)).AsImplementedInterfaces();
         builder.RegisterInstance(new BuildingParamsProvider(GetBuildingParams())).AsImplementedInterfaces();
         
-        // // UseCase
         builder.Register<AddBuildingUseCase>(Lifetime.Singleton);
         
-        // MessagePipe
         builder.RegisterMessagePipe();
 
         builder.Register<AddBuildingHandler>(Lifetime.Singleton).AsImplementedInterfaces();
         
-        // Buildings factory.
         builder.RegisterInstance<IBuildingFactory>(
             new BuildingFactory(
                 buildingPrefabs: _buildingPrefabs.ToDictionary(prefab => prefab.Type, prefab => prefab.BuildingPrefab),
                 root: _buildingsRoot)
         );
-
-        // builder.Register<BuildingSpawnSubscriber>(Lifetime.Singleton);
-
-        // Presentation: PlacePresenter and BuildingSpawnSubscriber are MonoBehaviours in scene - they will receive injections via VContainer
 
         builder.RegisterEntryPoint<CityBuilderGame>();
     }
